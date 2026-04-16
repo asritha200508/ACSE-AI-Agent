@@ -1,0 +1,11 @@
+streamlit
+pandas
+openpyxl
+anthropic
+sentence-transformers
+spacy
+numpy==1.26.4
+torch
+torchvision
+transformers
+python-dotenv
