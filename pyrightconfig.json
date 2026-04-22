@@ -1,0 +1,18 @@
+{
+  "include": [
+    "."
+  ],
+  "exclude": [
+    ".venv",
+    "__pycache__",
+    "**/*.pyc"
+  ],
+  "reportMissingImports": false,
+  "reportMissingModuleSource": false,
+  "reportGeneralTypeIssues": false,
+  "reportUnknownVariableType": false,
+  "reportUnknownMemberType": false,
+  "reportUnknownArgumentType": false,
+  "reportOperatorIssue": false,
+  "typeCheckingMode": "off"
+}

@@ -1,0 +1,181 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=Inter:wght@400;500;600&display=swap');
+
+/* Global Reset & Typography */
+html, body, .stApp { 
+    background-color: #f8fafc !important; 
+    font-family: 'Inter', sans-serif; 
+    color: #1e293b; 
+}
+.main .block-container { 
+    padding-top: 3rem; 
+    max-width: 900px; 
+}
+
+/* Typography & Titles */
+.page-title { 
+    text-align: center; 
+    font-family: 'Sora', sans-serif; 
+    font-size: 2.8rem; 
+    font-weight: 800; 
+    color: #1d4ed8; 
+    letter-spacing: -0.5px; 
+    margin-bottom: 0.5rem; 
+}
+.page-sub { 
+    text-align: center; 
+    color: #94a3b8; 
+    font-size: 1.05rem; 
+    font-weight: 500;
+    margin-top: 0; 
+    margin-bottom: 0; 
+}
+.page-divider { 
+    border: none; 
+    border-top: 1.5px solid #e2e8f0; 
+    margin: 2rem 0; 
+}
+
+/* Quick Actions Grid */
+.quick-actions-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
+.quick-actions-container button {
+    background: #ffffff !important;
+    border: 1.5px solid #e2e8f0 !important;
+    color: #1d4ed8 !important;
+    border-radius: 12px !important;
+    padding: 1rem !important;
+    font-weight: 600 !important;
+    font-family: 'Sora', sans-serif;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.quick-actions-container button:hover {
+    background: #eff6ff !important;
+    border-color: #bfdbfe !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+}
+
+/* Chat Bubbles */
+.chat-wrap { 
+    display:flex; 
+    flex-direction:column; 
+    gap:16px; 
+    padding-bottom:2rem; 
+}
+.bubble-user { 
+    align-self: flex-end; 
+    background: #1d4ed8; 
+    color: #ffffff; 
+    border-radius: 18px 18px 4px 18px; 
+    padding: 12px 18px; 
+    max-width: 75%; 
+    font-size: 0.95rem; 
+    line-height: 1.5; 
+    box-shadow: 0 2px 8px rgba(29, 78, 216, 0.2); 
+    font-weight: 500;
+}
+.bubble-bot { 
+    align-self: flex-start; 
+    background: #ffffff; 
+    color: #1e293b; 
+    border-radius: 4px 18px 18px 18px; 
+    padding: 16px 20px; 
+    max-width: 90%; 
+    font-size: 0.95rem; 
+    line-height: 1.6; 
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); 
+    border: 1px solid #e2e8f0; 
+}
+
+/* Cards & Components */
+.staff-card { 
+    background: #ffffff; 
+    border: 1px solid #bfdbfe; 
+    border-left: 4px solid #2563eb; 
+    border-radius: 10px; 
+    padding: 16px 20px; 
+    margin-top: 12px; 
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.staff-card .sc-name { 
+    font-family:'Sora',sans-serif; 
+    font-weight:700; 
+    font-size:1.15rem; 
+    color:#1d4ed8; 
+    margin-bottom:10px; 
+}
+.staff-card .sc-row { 
+    font-size:0.9rem; 
+    color:#475569; 
+    margin:6px 0; 
+}
+.staff-card .sc-row b { 
+    color:#1e293b; 
+    font-weight: 600;
+}
+
+/* Tables */
+.result-table { 
+    width:100%; 
+    border-collapse:collapse; 
+    font-size:0.9rem; 
+    margin-top:12px; 
+    border-radius:8px; 
+    overflow:hidden; 
+    border: 1px solid #e2e8f0;
+}
+.result-table th { 
+    background: #1d4ed8; 
+    color:#ffffff; 
+    padding:10px 14px; 
+    text-align:left; 
+    font-weight:600; 
+}
+.result-table td { 
+    padding:10px 14px; 
+    border-bottom:1px solid #e2e8f0; 
+    color:#334155; 
+    background: #ffffff;
+}
+.result-table tr:last-child td { border-bottom:none; }
+.result-table tr:nth-child(even) td { background: #f8fafc; }
+
+/* Inputs & Forms */
+.stTextInput input { 
+    border: 1.5px solid #cbd5e1 !important; 
+    border-radius: 12px !important; 
+    background: #ffffff !important; 
+    color: #1e293b !important; 
+    font-size: 1rem !important; 
+    padding: 14px 18px !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02) !important;
+}
+.stTextInput input:focus { 
+    border-color: #2563eb !important; 
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important; 
+}
+.stFormSubmitButton button { 
+    background: #1d4ed8 !important; 
+    color: #ffffff !important; 
+    border-radius: 12px !important; 
+    font-weight: 600 !important; 
+    border: none !important; 
+    width: 100% !important; 
+    height: 100% !important;
+    min-height: 48px !important;
+    transition: all 0.2s ease !important;
+}
+.stFormSubmitButton button:hover { 
+    background: #1e40af !important;
+    box-shadow: 0 4px 12px rgba(29, 78, 216, 0.2) !important; 
+    transform: translateY(-1px) !important;
+}
+
+/* Hide Streamlit Junk */
+#MainMenu, footer, header { visibility:hidden; }
+
