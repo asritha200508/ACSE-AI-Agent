@@ -1,3 +1,4 @@
+import sys
 import os
 import re
 import warnings
@@ -6,16 +7,25 @@ import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
 
+# ── Ensure backend is in path ───────────────────────────────────────────────
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if BASE_DIR not in sys.path:
+    sys.path.append(BASE_DIR)
+
 # ── Suppress ALL transformer/tokenizer noise BEFORE any imports ───────────────
 os.environ.setdefault("TRANSFORMERS_VERBOSITY", "error")
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
 warnings.filterwarnings("ignore")
 
-# Import the refactored backend logic
-from backend.data_loader import load_staff, load_invigilation
-from backend.router import route_query
-from backend.search import _col, _series
+# Import the refactored backend logic with error safety
+try:
+    from backend.data_loader import load_staff, load_invigilation
+    from backend.router import route_query
+    from backend.search import _col, _series
+except Exception as e:
+    st.error(f"❌ Critical Import Error: {e}")
+    st.stop()
 
 load_dotenv()
 
