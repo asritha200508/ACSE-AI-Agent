@@ -9,6 +9,14 @@ import streamlit as st
 # We'll import them locally or rely on session_state/global passing.
 # To keep it identical to app.py behavior, we'll try loading here or pass as args.
 
+def _norm(s: str) -> str:
+    """Normalize string by lowercasing and removing all non-alphanumeric characters."""
+    if not s or not isinstance(s, str): return ""
+    # Remove common titles first
+    s = re.sub(r'\b(dr|mr|ms|mrs|prof)\.?\b', '', s, flags=re.IGNORECASE)
+    return re.sub(r'[^a-z0-9]', '', s.lower())
+
+
 def _get(row, *keys) -> str:
     for k in keys:
         for col in row.index:
@@ -143,42 +151,41 @@ def search_staff(df: pd.DataFrame, parsed: dict, raw_query: str, nlp=None, embed
     # ── Direct name match from raw query (before RAG / spaCy) ───────────────────
     if name_col:
         name_series = _series(df, name_col)
-        # Try progressively: full name → last name → first name
+        norm_series = name_series.apply(_norm)
+        
         # Strip common prefixes to isolate name tokens
         clean_q = re.sub(r'\b(who is|show|details of|contact of|phone of|'  \
                          r'number of|tell me about|find|get|dr\.?|mr\.?|'   \
                          r'ms\.?|mrs\.?|prof\.?)\b', '', q, flags=re.IGNORECASE).strip()
-        # Also strip punctuation
-        clean_q = re.sub(r'[^\w\s]', ' ', clean_q).strip()
-        tokens = [t.strip() for t in clean_q.split() if len(t.strip()) > 2]
-
-        # Try matching 2+ consecutive tokens (catches "Eva Patel", "Radha Rani", etc.)
-        for size in range(len(tokens), 1, -1):
-            for start in range(len(tokens) - size + 1):
-                phrase = " ".join(tokens[start:start + size])
-                mask = name_series.str.contains(re.escape(phrase), flags=re.IGNORECASE, regex=True)
-                hits = df[mask]
-                if len(hits) == 1:
-                    return hits  # exact single match — return immediately
-                if len(hits) > 0:
-                    # Multiple matches for the phrase — still better than full fallback
-                    return hits
-
-        # Single token fallback — only if it's a proper noun (starts with capital in original)
-        for tok in re.findall(r'\b[A-Z][a-z]+\b', raw_query):
-            if tok.lower() in ("who", "is", "the", "show", "list", "all", "find",
-                               "dr", "mr", "ms", "mrs", "prof", "department"):
-                continue
-            mask = name_series.str.contains(re.escape(tok), flags=re.IGNORECASE, regex=True)
+        
+        # Try matching the entire normalized query first
+        q_norm = _norm(clean_q)
+        if len(q_norm) > 3:
+            mask = norm_series.str.contains(re.escape(q_norm), na=False)
             hits = df[mask]
             if not hits.empty:
                 return hits
 
+        # Fallback to tokenized matching
+        clean_q_spaces = re.sub(r'[^\w\s]', ' ', clean_q).strip()
+        tokens = [t.strip() for t in clean_q_spaces.split() if len(t.strip()) > 2]
+
+        for size in range(len(tokens), 1, -1):
+            for start in range(len(tokens) - size + 1):
+                phrase = "".join(tokens[start:start + size])
+                p_norm = _norm(phrase)
+                if len(p_norm) > 2:
+                    mask = norm_series.str.contains(re.escape(p_norm), na=False)
+                    hits = df[mask]
+                    if not hits.empty:
+                        return hits
+
     # ── Named person from LLM parsed output ──────────────────────────────────────
     person = parsed.get("person")
     if person and name_col:
-        mask = _series(df, name_col).str.contains(
-            re.escape(person), flags=re.IGNORECASE, regex=True)
+        p_norm = _norm(person)
+        norm_series = _series(df, name_col).apply(_norm)
+        mask = norm_series.str.contains(re.escape(p_norm), na=False)
         if df[mask].shape[0] > 0:
             return df[mask]
 
@@ -298,7 +305,7 @@ def search_invigilation(df_invig: pd.DataFrame, staff_df: pd.DataFrame, raw_quer
     # 3. Floor filter
     floor_str = parsed.get("floor")
     if not floor_str:
-        floor_match = re.search(r'floor\s*(\d+)|(\d+)\s*(st|nd|rd|th)?\s*floor', q)
+        floor_match = re.search(r'(?:floor|flour)\s*(\d+)|(\d+)\s*(st|nd|rd|th)?\s*(?:floor|flour)', q)
         if floor_match:
             floor_str = floor_match.group(1) or floor_match.group(2)
             
@@ -329,12 +336,17 @@ def search_invigilation(df_invig: pd.DataFrame, staff_df: pd.DataFrame, raw_quer
                     break
 
     if person_str and name_col:
-        mask1 = _series(hits, name_col).str.contains(re.escape(person_str), flags=re.IGNORECASE, na=False)
+        p_norm = _norm(person_str)
+        norm_series = _series(hits, name_col).apply(_norm)
+        mask1 = norm_series.str.contains(re.escape(p_norm), na=False)
         hits_filtered = hits[mask1]
+        
         if hits_filtered.empty:
             for part in person_str.split():
                 if len(part) > 3:
-                    hits_filtered = hits[_series(hits, name_col).str.contains(re.escape(part), flags=re.IGNORECASE, na=False)]
+                    p_part_norm = _norm(part)
+                    mask_part = norm_series.str.contains(re.escape(p_part_norm), na=False)
+                    hits_filtered = hits[mask_part]
                     if not hits_filtered.empty:
                         break
         hits = hits_filtered

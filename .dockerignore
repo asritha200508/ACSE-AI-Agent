@@ -1,0 +1,16 @@
+.venv
+__pycache__
+.git
+.gitignore
+.env
+*.pyc
+*.pyo
+*.pyd
+.db
+.sqlite
+.vscode
+.idea
+.gemini
+node_modules
+dist
+build

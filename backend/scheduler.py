@@ -3,7 +3,7 @@ import random
 import datetime
 import pandas as pd
 import streamlit as st
-from .search import _col, _series
+from .search import _col, _series, _norm
 
 def generate_schedule(df: pd.DataFrame, raw_query: str, parsed: dict) -> str:
     if df is None or df.empty:
@@ -18,10 +18,31 @@ def generate_schedule(df: pd.DataFrame, raw_query: str, parsed: dict) -> str:
         target_date = (datetime.date.today() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
 
     room_matches = re.findall(r'\b(\d{3,4})\b', raw_query)
-    rooms = room_matches if room_matches else [
+    
+    # Floor detection
+    floor_str = parsed.get("floor")
+    if not floor_str:
+        # Match '6th floor', '6 floor', 'floor 6', and common typos like 'flour'
+        floor_match = re.search(r'(?:floor|flour)\s*(\d+)|(\d+)\s*(st|nd|rd|th)?\s*(?:floor|flour)', raw_query.lower())
+        if floor_match:
+            floor_str = floor_match.group(1) or floor_match.group(2)
+
+    default_rooms = [
         "301", "302", "303", "401", "402", "403",
         "501", "502", "601", "602", "603", "607"
     ]
+
+    if room_matches:
+        rooms = room_matches
+    elif floor_str:
+        # Filter rooms by floor (e.g. '6' -> rooms starting with '6')
+        # We handle string matching to catch '6' matching '601', '602', etc.
+        rooms = [r for r in default_rooms if r.startswith(str(floor_str))]
+        if not rooms:
+            # Fallback if no rooms match the floor in our default list
+            rooms = default_rooms
+    else:
+        rooms = default_rooms
 
     name_col = _col(df, "name")
     desg_col = _col(df, "desig")
@@ -44,10 +65,11 @@ def generate_schedule(df: pd.DataFrame, raw_query: str, parsed: dict) -> str:
     if not faculty_names:
         return "<p style='color:#ef4444;'>❌ No faculty available for scheduling.</p>"
 
-    # Prioritize faculty mentioned in the query (e.g. "Assign Jyostna Devi")
     priority_faculty = []
+    q_norm = _norm(raw_query)
     for f in faculty_names:
-        if any(p.lower() in raw_query.lower() for p in f.split() if len(p) > 3):
+        f_norm = _norm(f)
+        if f_norm and f_norm in q_norm:
             priority_faculty.append(f)
     
     # Remove priority from main list
@@ -136,9 +158,11 @@ def replace_faculty(df: pd.DataFrame, raw_query: str, parsed: dict) -> str:
     # Try to find two names in the query
     # Example: "Replace A with B" or "Replace B in place of A"
     all_faculty_names = [str(r[name_col]).strip() for _, r in df.iterrows()]
+    q_norm = _norm(raw_query)
     found_names = []
     for name in all_faculty_names:
-        if len(name) > 5 and name.lower() in raw_query.lower():
+        n_norm = _norm(name)
+        if n_norm and len(n_norm) > 4 and n_norm in q_norm:
             found_names.append(name)
     
     # Sort by length descending to avoid matching substrings
@@ -171,8 +195,11 @@ def replace_faculty(df: pd.DataFrame, raw_query: str, parsed: dict) -> str:
         return ("<p style='color:#f59e0b;'>⚠️ Please mention the faculty name to replace. "
                 "Example: <i>'Replace Dr. Kumar with available faculty'</i></p>")
 
-    mask = schedule_df["Faculty Assigned"].str.contains(
-        re.escape(absent_faculty), flags=re.IGNORECASE, regex=True)
+    # Match using normalized names in the schedule
+    absent_norm = _norm(absent_faculty)
+    mask = schedule_df["Faculty Assigned"].apply(_norm).str.contains(
+        re.escape(absent_norm), na=False)
+    
     if not mask.any():
         return f"<p style='color:#ef4444;'>❌ <b>{absent_faculty}</b> not found in current schedule.</p>"
 

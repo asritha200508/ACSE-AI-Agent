@@ -23,7 +23,7 @@ def llm_parse_query(query: str, api_key: str) -> dict:
         "person name if mentioned, "
         "role/designation keyword if mentioned, "
         "room number if mentioned, "
-        "floor number if mentioned, "
+        "floor number if mentioned (look for words like 'floor', 'flour', 'level' or just digit, e.g. '6th floor' -> '6'), "
         "date if mentioned (Convert strictly to YYYY-MM-DD or 'tomorrow' if relative), "
         "slot if mentioned (extract string/digit, e.g. '1', '2', 'SLOT1' -> '1'), "
         "action keyword if mentioned (assign/replace/notify/schedule). "
