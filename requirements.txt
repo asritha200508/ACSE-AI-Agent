@@ -4,6 +4,6 @@ openpyxl
 anthropic
 sentence-transformers
 spacy
-en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
-numpy==1.26.4
+en_core_web_sm
+numpy<2.0.0
 python-dotenv
