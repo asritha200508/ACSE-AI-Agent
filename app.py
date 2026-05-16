@@ -61,8 +61,12 @@ st.set_page_config(
     layout="wide",
 )
 
-with open(os.path.join(BASE_DIR, "style.css")) as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+CSS_PATH = os.path.join(BASE_DIR, "style.css")
+if os.path.exists(CSS_PATH):
+    with open(CSS_PATH) as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+else:
+    st.warning("⚠️ CSS file not found. App will load with default styles.")
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  SESSION STATE
